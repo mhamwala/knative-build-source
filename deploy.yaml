@@ -1,0 +1,33 @@
+apiVersion: serving.knative.dev/v1alpha1
+kind: Route
+metadata:
+  name: private-repos
+spec:
+  traffic:
+  - configurationName: private-repos
+    percent: 100
+---
+apiVersion: serving.knative.dev/v1alpha1
+kind: Configuration
+metadata:
+  name: private-repos
+spec:
+  build:
+    # Run this build as our build-bot
+    serviceAccountName: build-bot
+    source:
+      git:
+        url: https://github.com/<username>/<repo>
+        revision: master
+    template:
+      name: kaniko
+      arguments:
+      - name: IMAGE
+        value: docker.io/<username>/<app>
+  revisionTemplate:
+    metadata:
+      labels:
+        knative.dev/type: app
+    spec:
+      container:
+        image: docker.io/<username>/<app> 
